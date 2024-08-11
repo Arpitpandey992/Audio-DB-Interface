@@ -1,0 +1,9 @@
+# Database Configuration
+database:
+  host: localhost
+  port: 6379
+
+# Audio Configuration
+audio:
+  scan_directories:
+    - /mnt/c/Users/Arpit/Music/Vocaloid
