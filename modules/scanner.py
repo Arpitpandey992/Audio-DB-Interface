@@ -1,0 +1,51 @@
+"""
+This module is responsible for:
+* Scanning every directory defined in audio.scan_directories for audio files
+* extracting the metadata from every file and intelligently inserting to the database
+* it should support re-scanning very quickly (think about how to do this, using directory hash or something)
+* While scanning, it should also upsert the data to the provided database to parallelize the task
+"""
+
+import os
+from modules.config import Config
+from modules.database import Database
+from modules.upsert_merger import UpsertMerger
+
+
+class AudioScanner:
+    def __init__(self, config: Config, database: Database):
+        self.directories_to_scan = config.audio.scan_directories
+        self.database = database
+        self.config = config
+        self.upsert_merger = UpsertMerger(database)
+
+    def is_audio_file(self, filename: str) -> bool:
+        """Check if a file is an audio file based on its extension."""
+        _, ext = os.path.splitext(filename)
+        return ext.lower() in self.config.audio.scan_formats
+
+    def scan_all_configured_directories(self) -> list[str]:
+        """Scan all configured directories for audio files."""
+        all_audio_files = []
+        for directory in self.directories_to_scan:
+            all_audio_files.extend(self._scan_directory(directory))
+        return all_audio_files
+
+    def _scan_directory(self, directory: str) -> list[str]:
+        """Scan a single directory for audio files."""
+        audio_files = []
+        for root, _, files in os.walk(directory):
+            for file in files:
+                if self.is_audio_file(file):
+                    audio_files.append(os.path.join(root, file))
+        return audio_files
+
+
+if __name__ == "__main__":
+    config = Config.get_base_configuration()
+    scanner = AudioScanner(config, Database(config))
+    audio_files = scanner.scan_all_configured_directories()
+
+    print(f"Found {len(audio_files)} audio files:")
+    for audio_file in audio_files:
+        print(f"- {audio_file}")
