@@ -18,11 +18,14 @@ class Database:
         self.config = config
         self.client = MeiliSearchHelper(config)
 
-    def upsert_documents(self, documents: list[dict], primary_key: str) -> None:
+    def upsert_documents(self, documents: list[dict], primary_key: str | None = None) -> None:
         self.client.upsert_documents(documents, primary_key=primary_key)
 
     def search(self, key: str):
         return self.client.search(key)
+
+    def get_primary_key_name(self) -> str:
+        return self.client.get_primary_key_name()
 
     def close(self):
         self.client.close()

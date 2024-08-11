@@ -1,6 +1,7 @@
+import hashlib
+import requests
 import threading
 from time import sleep
-import requests
 from unigen import AudioFactory, AudioFileMetadata
 
 from modules.print.utils import get_rich_console
@@ -64,3 +65,9 @@ def wait_till_address_responds(url: str) -> bool:
     if not server_ready:
         return False
     return True
+
+
+def calculate_md5(text: str) -> str:
+    md5_hash = hashlib.md5()
+    md5_hash.update(text.encode("utf-8"))
+    return md5_hash.hexdigest()

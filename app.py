@@ -17,8 +17,6 @@ class App:
 
 
 if __name__ == "__main__":
-    import time
-
     app = App()
     app.start_up()
 

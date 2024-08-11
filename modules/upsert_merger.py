@@ -5,7 +5,7 @@ Ideally, it should provide an upsert function which should collect data and upse
 
 from dataclasses import asdict
 from modules.database import Database
-from modules.helper import extract_audio_file_metadata
+from modules.helper import calculate_md5, extract_audio_file_metadata
 from modules.print.utils import get_rich_console
 
 console = get_rich_console()
@@ -26,7 +26,7 @@ class UpsertMerger:
         upsertable_metadata_list = [result for file_path in file_paths if (result := self._extract_upsertable_information(file_path)) is not None]
         for metadata in upsertable_metadata_list:
             console.log(f"[grey]upserting metadata of {metadata["file_path"]}")
-        self.database.upsert_documents(upsertable_metadata_list, primary_key="file_path")
+        self.database.upsert_documents(upsertable_metadata_list)
 
         return True  # TODO: return proper result of upsert, think over if it is better to stop upsert if even one of the individual upserts failed
 
@@ -41,4 +41,5 @@ class UpsertMerger:
         document.pop("tags")
         document.update(**asdict(metadata.tags))
         document.pop("pictures")
+        document[self.database.get_primary_key_name()] = calculate_md5(metadata.file_path)
         return document

@@ -9,6 +9,7 @@ class MeiliSearchConfig(BaseModel):
     port: int
     db_path: str
     index_name: str
+    index_primary_key: str
     startup_args: list[str]
 
 
