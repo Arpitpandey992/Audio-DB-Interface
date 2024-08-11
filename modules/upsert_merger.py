@@ -3,15 +3,18 @@ This module extracts information from scanned audio files and upserts them to th
 Ideally, it should provide an upsert function which should collect data and upsert at regular intervals (or batch size)
 """
 
+from dataclasses import asdict
 from modules.database import Database
 from modules.helper import extract_audio_file_metadata
+from modules.print.utils import get_rich_console
 
+console = get_rich_console()
 
 class UpsertMerger:
     def __init__(self, database: Database) -> None:
         self.database = database
 
-    def upsert_audio_file_metadata(self, file_path: str) -> bool:
+    def upsert_audio_file_metadata(self, *file_paths: str) -> bool:
         """
         upserts the provided audio file's metadata to database after extracting it
         Args:
@@ -20,9 +23,22 @@ class UpsertMerger:
         Returns:
             bool: whether the upsert was successful or not
         """
+        upsertable_metadata_list = [result for file_path in file_paths if (result := self._extract_upsertable_information(file_path)) is not None]
+        for metadata in upsertable_metadata_list:
+            console.log(f"[grey]upserting metadata of {metadata["file_path"]}")
+        self.database.upsert_documents(upsertable_metadata_list, primary_key="file_path")
+
+        return True  # TODO: return proper result of upsert, think over if it is better to stop upsert if even one of the individual upserts failed
+
+    def _extract_upsertable_information(self, file_path: str) -> dict[str, str] | None:
         try:
             metadata = extract_audio_file_metadata(file_path)
         except Exception as e:
             print(f"could not extract metadata of [{file_path}]. error: [{e}]")
-            return False
-        
+            return None
+        # TODO: remove `picture` from `metadata.tags` before upserting because it is a bottleneck. Better to fetch it later
+        document = asdict(metadata)
+        document.pop("tags")
+        document.update(**asdict(metadata.tags))
+        document.pop("pictures")
+        return document

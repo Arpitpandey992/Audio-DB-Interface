@@ -12,7 +12,7 @@ from modules.database import Database
 from modules.upsert_merger import UpsertMerger
 
 
-class AudioScanner:
+class Scanner:
     def __init__(self, config: Config, database: Database):
         self.directories_to_scan = config.audio.scan_directories
         self.database = database
@@ -22,14 +22,17 @@ class AudioScanner:
     def is_audio_file(self, filename: str) -> bool:
         """Check if a file is an audio file based on its extension."""
         _, ext = os.path.splitext(filename)
-        return ext.lower() in self.config.audio.scan_formats
+        return ext.lower().strip() in self.config.audio.scan_formats
 
-    def scan_all_configured_directories(self) -> list[str]:
-        """Scan all configured directories for audio files."""
+    def scan_and_upsert_all_configured_directories(self) -> None:
+        """
+        Scan all configured directories for audio files.
+        TODO: make it multithreaded such that it scans files on different physical devices in separate threads to significantly speed up processing
+        """
         all_audio_files = []
         for directory in self.directories_to_scan:
             all_audio_files.extend(self._scan_directory(directory))
-        return all_audio_files
+        self.upsert_merger.upsert_audio_file_metadata(*all_audio_files)
 
     def _scan_directory(self, directory: str) -> list[str]:
         """Scan a single directory for audio files."""
@@ -43,9 +46,5 @@ class AudioScanner:
 
 if __name__ == "__main__":
     config = Config.get_base_configuration()
-    scanner = AudioScanner(config, Database(config))
-    audio_files = scanner.scan_all_configured_directories()
-
-    print(f"Found {len(audio_files)} audio files:")
-    for audio_file in audio_files:
-        print(f"- {audio_file}")
+    scanner = Scanner(config, Database(config))
+    scanner.scan_and_upsert_all_configured_directories()

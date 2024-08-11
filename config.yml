@@ -4,6 +4,7 @@ database:
     host: localhost
     port: 7700
     db_path: "/home/arpit/.config/meilisearch/db"
+    index_name: audio_metadata
     startup_args:
       - --no-analytics
 

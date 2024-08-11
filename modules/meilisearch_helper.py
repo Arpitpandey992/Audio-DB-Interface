@@ -1,5 +1,5 @@
-import meilisearch
 import subprocess
+from meilisearch import Client as MeilisearchClient
 
 from modules.config import Config
 from modules.helper import wait_till_address_responds
@@ -13,9 +13,17 @@ class MeiliSearchHelper:
         self.config = config.database.meilisearch
         self.http_addr = f"{self.config.host}:{self.config.port}"
         self.server_url = f"{'https'if not self.config.port or self.config.port==443 else 'http'}://{self.http_addr}"
-        self.meilisearch_process = self._start_meilisearch()  # TODO: make sure this is closed when the program exits
+        self.meilisearch_process = self._start_meilisearch()  # TODO: make sure this is closed when the program exits (app.py)
 
-        self.client = meilisearch.Client(self.http_addr)
+        self.client = MeilisearchClient(self.server_url)
+        self.index = self.client.index(self.config.index_name)
+
+    def upsert_documents(self, documents: list[dict], primary_key: str) -> None:
+        print(documents[0])
+        self.index.add_documents(documents, primary_key=primary_key)
+
+    def search(self, key: str):
+        return self.index.search(key)
 
     def close(self):
         """close all held up connections to free up resources"""
