@@ -13,6 +13,8 @@ database:
 audio:
   scan_directories:
     - /mnt/c/Users/Arpit/Music/Vocaloid
+    - /mnt/c/Users/Arpit/Music/test
+    - /mnt/c/Users/Arpit/Music/ksl
 
   scan_formats:
     - .flac

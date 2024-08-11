@@ -9,6 +9,7 @@ This module is responsible for:
 import os
 from modules.config import Config
 from modules.database import Database
+from modules.print.utils import get_rich_console
 from modules.upsert_merger import UpsertMerger
 
 
@@ -18,6 +19,7 @@ class Scanner:
         self.database = database
         self.config = config
         self.upsert_merger = UpsertMerger(database)
+        self.console = get_rich_console()
 
     def is_audio_file(self, filename: str) -> bool:
         """Check if a file is an audio file based on its extension."""
@@ -31,7 +33,10 @@ class Scanner:
         """
         all_audio_files = []
         for directory in self.directories_to_scan:
+            self.console.log(f"scanning: {directory}")
             all_audio_files.extend(self._scan_directory(directory))
+        self.console.log(f"finished scanning all directories")
+        self.console.log(f"upserting audio metadata of {len(all_audio_files)} to database")
         self.upsert_merger.upsert_audio_file_metadata(*all_audio_files)
 
     def _scan_directory(self, directory: str) -> list[str]:

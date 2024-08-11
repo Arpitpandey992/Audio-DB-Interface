@@ -17,7 +17,6 @@ class MeiliSearchHelper:
 
         self.client = meilisearch.Client(self.server_url)
         self.client.create_index(self.config.index_name, {"primaryKey": self.config.index_primary_key})
-        # self.index = self.client.index(self.config.index_name,)
 
     def upsert_documents(self, documents: list[dict], primary_key: str | None = None) -> None:
         if primary_key:
