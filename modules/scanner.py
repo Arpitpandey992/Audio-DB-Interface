@@ -30,13 +30,14 @@ class Scanner:
         """
         Scan all configured directories for audio files.
         TODO: make it multithreaded such that it scans files on different physical devices in separate threads to significantly speed up processing
+        TODO: don't read the directories having the same recursive hash (because the bottleneck is the upsert part, not the scanning part)
         """
         all_audio_files = []
         for directory in self.directories_to_scan:
             self.console.log(f"scanning: {directory}")
             all_audio_files.extend(self._scan_directory(directory))
         self.console.log(f"finished scanning all directories")
-        self.console.log(f"upserting audio metadata of {len(all_audio_files)} to database")
+        self.console.log(f"upserting audio metadata of {len(all_audio_files)} audio files to database")
         self.upsert_merger.upsert_audio_file_metadata(*all_audio_files)
 
     def _scan_directory(self, directory: str) -> list[str]:
