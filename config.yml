@@ -15,6 +15,7 @@ audio:
     - /mnt/c/Users/Arpit/Music/Vocaloid
     - /mnt/c/Users/Arpit/Music/test
     - /mnt/c/Users/Arpit/Music/ksl
+    - /mnt/f/Music/Anime
 
   scan_formats:
     - .flac

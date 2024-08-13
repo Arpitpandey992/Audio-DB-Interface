@@ -37,7 +37,6 @@ class Scanner:
             self.console.log(f"scanning: {directory}")
             all_audio_files.extend(self._scan_directory(directory))
         self.console.log(f"finished scanning all directories")
-        self.console.log(f"upserting audio metadata of {len(all_audio_files)} audio files to database")
         self.upsert_merger.upsert_audio_file_metadata(*all_audio_files)
 
     def _scan_directory(self, directory: str) -> list[str]:
